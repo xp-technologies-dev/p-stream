@@ -6,7 +6,6 @@ import { getSeasonDetails } from "@/backend/metadata/tmdb";
 import { getNetworkContent } from "@/backend/metadata/traktApi";
 import { TMDBContentTypes } from "@/backend/metadata/types/tmdb";
 import { Icon, Icons } from "@/components/Icon";
-import { hasAired } from "@/components/player/utils/aired";
 import { useLanguageStore } from "@/stores/language";
 import { usePreferencesStore } from "@/stores/preferences";
 import { getProgressPercentage, useProgressStore } from "@/stores/progress";
@@ -283,23 +282,6 @@ export function DetailsContent({ data, minimal = false }: DetailsContentProps) {
     });
   };
 
-  const handleShuffleAll = () => {
-    if (data.type !== "show" || !data.id) return;
-    const allLoadedEpisodes = Object.values(fetchedSeasons).flat();
-    const aired = allLoadedEpisodes.filter((episode) => hasAired(episode.air_date));
-    if (aired.length === 0) return;
-
-    const pick = aired[Math.floor(Math.random() * aired.length)];
-    const season = data.seasonData?.seasons.find(
-      (s) => s.season_number === pick.season_number,
-    );
-    if (!season) return;
-
-    window.location.assign(
-      `/media/tmdb-tv-${data.id}-${mediaSlug}/${season.id}/${pick.id}?shuffle=1`,
-    );
-  };
-
   return (
     <div className="relative h-full flex flex-col">
       {/* Share notification popup */}
@@ -379,7 +361,6 @@ export function DetailsContent({ data, minimal = false }: DetailsContentProps) {
         <DetailsBody
           data={data}
           onPlayClick={handlePlayClick}
-          onShuffleAllClick={handleShuffleAll}
           onShareClick={handleShareClick}
           showProgress={showProgress}
           voteAverage={data.voteAverage}

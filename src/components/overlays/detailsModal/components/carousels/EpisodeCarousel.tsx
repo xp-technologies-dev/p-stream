@@ -53,24 +53,6 @@ export function EpisodeCarousel({
   const updateItem = useProgressStore((s) => s.updateItem);
   const confirmModal = useModal("season-watch-confirm");
 
-  const handleShuffleSeason = () => {
-    const aired = currentSeasonEpisodes.filter((episode) =>
-      hasAired(episode.air_date),
-    );
-    if (aired.length === 0 || !mediaId || !mediaTitle) return;
-    const pick = aired[Math.floor(Math.random() * aired.length)];
-    const season = seasons.find(
-      (s) => s.season_number === selectedSeason,
-    );
-    if (!season) return;
-
-    window.location.assign(
-      `/media/tmdb-tv-${mediaId}-${slugifyTitle(
-        mediaTitle,
-      )}/${season.id}/${pick.id}?shuffle=1&shuffleSeason=${season.id}`,
-    );
-  };
-
   const handleScroll = (direction: "left" | "right") => {
     if (!carouselRef.current) return;
 
@@ -447,17 +429,6 @@ export function EpisodeCarousel({
                 icon={SeasonWatched ? Icons.EYE : Icons.EYE_SLASH}
                 className="h-5 w-5 text-white"
               />
-            </button>
-          )}
-
-          {!showFavorites && (
-            <button
-              type="button"
-              onClick={handleShuffleSeason}
-              className="p-1.5 bg-dropdown-background hover:bg-dropdown-hoverBackground transition-colors rounded-full"
-              title={t("details.shuffleSeason")}
-            >
-              <Icon icon={Icons.SHUFFLE} className="h-5 w-5 text-white" />
             </button>
           )}
 

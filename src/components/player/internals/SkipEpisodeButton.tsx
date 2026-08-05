@@ -3,7 +3,6 @@ import { useCallback } from "react";
 import { Icons } from "@/components/Icon";
 import { usePlayerMeta } from "@/components/player/hooks/usePlayerMeta";
 import { VideoPlayerButton } from "@/components/player/internals/Button";
-import { getShuffledNextPick } from "@/components/player/utils/shuffle";
 import { PlayerMeta } from "@/stores/player/slices/source";
 import { usePlayerStore } from "@/stores/player/store";
 import { usePreferencesStore } from "@/stores/preferences";
@@ -16,7 +15,6 @@ interface SkipEpisodeButtonProps {
 
 export function SkipEpisodeButton(props: SkipEpisodeButtonProps) {
   const meta = usePlayerStore((s) => s.meta);
-  const isShuffled = usePlayerStore((s) => s.interface.isShuffled);
   const { setDirectMeta } = usePlayerMeta();
   const setShouldStartFromBeginning = usePlayerStore(
     (s) => s.setShouldStartFromBeginning,
@@ -30,31 +28,13 @@ export function SkipEpisodeButton(props: SkipEpisodeButtonProps) {
     (v) => v.number === (meta?.episode?.number ?? 0) + 1,
   );
 
-  const loadNextEpisode = useCallback(async () => {
-    if (!meta || !meta.episode) return;
+  const loadNextEpisode = useCallback(() => {
+    if (!meta || !nextEp) return;
     if (sourceId) {
       setLastSuccessfulSource(sourceId);
     }
-
-    let targetEp = nextEp;
-    let targetSeason = meta.season;
-    if (isShuffled && meta.type === "show") {
-      const pick = await getShuffledNextPick(meta);
-      if (!pick) return;
-      targetEp = pick.episode;
-      targetSeason = pick.season;
-    }
-    if (!targetEp) return;
-
     const metaCopy = { ...meta };
-    metaCopy.episode = targetEp;
-    if (targetSeason) {
-      metaCopy.season = {
-        number: targetSeason.number,
-        tmdbId: targetSeason.tmdbId,
-        title: targetSeason.title,
-      };
-    }
+    metaCopy.episode = nextEp;
     setShouldStartFromBeginning(true);
     setDirectMeta(metaCopy);
     props.onChange?.(metaCopy);
@@ -72,14 +52,12 @@ export function SkipEpisodeButton(props: SkipEpisodeButtonProps) {
     updateItem,
     sourceId,
     setLastSuccessfulSource,
-    isShuffled,
   ]);
 
-  // Don't show the button when not shuffling and there's no next episode
+  // Don't show button if not in control, not a show, or no next episode
   if (!props.inControl) return null;
-  if (!meta?.episode) return null;
+  if (!meta?.episode || !nextEp) return null;
   if (meta.type !== "show") return null;
-  if (!isShuffled && !nextEp) return null;
 
   return (
     <VideoPlayerButton

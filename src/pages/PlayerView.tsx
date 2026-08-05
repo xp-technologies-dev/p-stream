@@ -107,15 +107,6 @@ export function RealPlayerView() {
     };
   }, [paramsData, reset]);
 
-  const setShuffle = usePlayerStore((s) => s.setShuffle);
-  const location = useLocation();
-  useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    if (searchParams.get("shuffle") !== "1") return;
-    const seasonId = searchParams.get("shuffleSeason");
-    setShuffle(true, seasonId || null);
-  }, []);
-
   // Auto-open watch party menu if URL contains watchparty parameter
   useEffect(() => {
     if (openedWatchPartyRef.current) return;

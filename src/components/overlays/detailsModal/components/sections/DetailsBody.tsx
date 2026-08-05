@@ -17,7 +17,6 @@ import { DetailsBodyProps } from "../../types";
 export function DetailsBody({
   data,
   onPlayClick,
-  onShuffleAllClick,
   onShareClick,
   showProgress,
   voteAverage,
@@ -232,19 +231,6 @@ export function DetailsBody({
                     : t("details.play")}
             </span>
           </Button>
-          {data.type === "show" && onShuffleAllClick && (
-            <button
-              type="button"
-              onClick={onShuffleAllClick}
-              title={t("details.shuffleAll")}
-              className="p-2 opacity-75 transition-opacity duration-300 hover:scale-110 hover:cursor-pointer hover:opacity-95"
-            >
-              <IconPatch
-                icon={Icons.SHUFFLE}
-                className="transition-transform duration-300 hover:scale-110 hover:cursor-pointer"
-              />
-            </button>
-          )}
           <div className="flex items-center gap-1 flex-shrink-0">
             <MediaRatingCapsule
               media={{

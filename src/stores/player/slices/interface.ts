@@ -1,8 +1,6 @@
 import { DisplayError } from "@/components/player/display/displayInterface";
 import { MakeSlice } from "@/stores/player/slices/types";
 
-import { PlayerMetaEpisode } from "./source";
-
 export enum VideoPlayerTimeFormat {
   REGULAR = 0,
   REMAINING = 1,
@@ -12,11 +10,6 @@ export enum PlayerHoverState {
   NOT_HOVERING = "not_hovering",
   MOUSE_HOVER = "mouse_hover",
   MOBILE_TAPPED = "mobile_tapped",
-}
-
-export interface PlayerShufflePoolItem {
-  season: { number: number; tmdbId: string; title: string };
-  episode: PlayerMetaEpisode;
 }
 
 export interface InterfaceSlice {
@@ -30,11 +23,6 @@ export interface InterfaceSlice {
     hideNextEpisodeBtn: boolean;
     shouldStartFromBeginning: boolean;
     error?: DisplayError;
-
-    isShuffled: boolean;
-    shuffleSeasonId: string | null;
-    shufflePool: PlayerShufflePoolItem[];
-    shuffledEpisodeIds: string[];
 
     volumeChangedWithKeybind: boolean; // has the volume recently been adjusted with the up/down arrows recently?
     volumeChangedWithKeybindDebounce: NodeJS.Timeout | null; // debounce for the duration of the "volume changed thingamajig"
@@ -56,10 +44,6 @@ export interface InterfaceSlice {
   setShouldStartFromBeginning(val: boolean): void;
   setSpeedBoosted(state: boolean): void;
   setShowSpeedIndicator(state: boolean): void;
-  setShuffle(isShuffled: boolean, seasonId?: string | null): void;
-  setShufflePool(pool: PlayerShufflePoolItem[]): void;
-  setShuffledEpisodeIds(ids: string[]): void;
-  addShuffledEpisodeId(id: string): void;
 }
 
 export const createInterfaceSlice: MakeSlice<InterfaceSlice> = (set, get) => ({
@@ -79,10 +63,6 @@ export const createInterfaceSlice: MakeSlice<InterfaceSlice> = (set, get) => ({
     shouldStartFromBeginning: false,
     isSpeedBoosted: false,
     showSpeedIndicator: false,
-    isShuffled: false,
-    shuffleSeasonId: null,
-    shufflePool: [],
-    shuffledEpisodeIds: [],
   },
 
   setShouldStartFromBeginning(val) {
@@ -142,31 +122,6 @@ export const createInterfaceSlice: MakeSlice<InterfaceSlice> = (set, get) => ({
   setShowSpeedIndicator(state) {
     set((s) => {
       s.interface.showSpeedIndicator = state;
-    });
-  },
-  setShuffle(isShuffled, seasonId = null) {
-    set((s) => {
-      s.interface.isShuffled = isShuffled;
-      s.interface.shuffleSeasonId = isShuffled ? seasonId : null;
-      s.interface.shufflePool = [];
-      s.interface.shuffledEpisodeIds = [];
-    });
-  },
-  setShufflePool(pool) {
-    set((s) => {
-      s.interface.shufflePool = pool;
-    });
-  },
-  setShuffledEpisodeIds(ids) {
-    set((s) => {
-      s.interface.shuffledEpisodeIds = ids;
-    });
-  },
-  addShuffledEpisodeId(id) {
-    set((s) => {
-      if (!s.interface.shuffledEpisodeIds.includes(id)) {
-        s.interface.shuffledEpisodeIds.push(id);
-      }
     });
   },
 });

@@ -5,7 +5,6 @@ import { MWMediaType } from "@/backend/metadata/types/mw";
 import { useCaptions } from "@/components/player/hooks/useCaptions";
 import { usePlayerMeta } from "@/components/player/hooks/usePlayerMeta";
 import { useVolume } from "@/components/player/hooks/useVolume";
-import { getShuffledNextPick } from "@/components/player/utils/shuffle";
 import { useOverlayRouter } from "@/hooks/useOverlayRouter";
 import { useOverlayStack } from "@/stores/interface/overlayStack";
 import { usePlayerStore } from "@/stores/player/store";
@@ -92,26 +91,6 @@ export function KeyboardEvents() {
   // Episode navigation functions
   const navigateToNextEpisode = useCallback(async () => {
     if (!meta || meta.type !== "show" || !meta.episode) return;
-
-    if (usePlayerStore.getState().interface.isShuffled) {
-      const pick = await getShuffledNextPick(meta);
-      if (!pick) return;
-      if (sourceId) {
-        setLastSuccessfulSource(sourceId);
-      }
-      const metaCopy = { ...meta };
-      metaCopy.episode = pick.episode;
-      metaCopy.season = {
-        number: pick.season.number,
-        tmdbId: pick.season.tmdbId,
-        title: pick.season.title,
-      };
-      setShouldStartFromBeginning(true);
-      setDirectMeta(metaCopy);
-      const defaultProgress = { duration: 0, watched: 0 };
-      updateItem({ meta: metaCopy, progress: defaultProgress });
-      return;
-    }
 
     // Check if we're at the last episode of the current season
     const isLastEpisode =

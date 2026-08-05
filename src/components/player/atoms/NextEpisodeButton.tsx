@@ -8,7 +8,6 @@ import { MWMediaType, MWSeasonMeta } from "@/backend/metadata/types/mw";
 import { Button } from "@/components/buttons/Button";
 import { Icon, Icons } from "@/components/Icon";
 import { usePlayerMeta } from "@/components/player/hooks/usePlayerMeta";
-import { getShuffledNextPick } from "@/components/player/utils/shuffle";
 import { Transition } from "@/components/utils/Transition";
 import { PlayerMeta } from "@/stores/player/slices/source";
 import { usePlayerStore } from "@/stores/player/store";
@@ -104,7 +103,6 @@ export function NextEpisodeButton(props: {
   const duration = usePlayerStore((s) => s.progress.duration);
   const isHidden = usePlayerStore((s) => s.interface.hideNextEpisodeBtn);
   const meta = usePlayerStore((s) => s.meta);
-  const isShuffled = usePlayerStore((s) => s.interface.isShuffled);
   const { setDirectMeta } = usePlayerMeta();
   const metaType = usePlayerStore((s) => s.meta?.type);
   const time = usePlayerStore((s) => s.progress.time);
@@ -154,41 +152,23 @@ export function NextEpisodeButton(props: {
         (v) => v.number === (meta?.episode?.number ?? 0) + 1,
       );
 
-  const loadNextEpisode = useCallback(async () => {
-    if (!meta || !meta.episode) return;
+  const loadNextEpisode = useCallback(() => {
+    if (!meta || !nextEp) return;
 
     // Store the current source as the last successful source
     if (sourceId) {
       setLastSuccessfulSource(sourceId);
     }
 
-    let shufflePick: NonNullable<
-      Awaited<ReturnType<typeof getShuffledNextPick>>
-    > | null = null;
-    if (isShuffled && meta.type === "show") {
-      shufflePick = await getShuffledNextPick(meta);
-      if (!shufflePick) return;
-    }
-
     const metaCopy = { ...meta };
-    if (shufflePick) {
-      metaCopy.episode = shufflePick.episode;
-      metaCopy.season = {
-        number: shufflePick.season.number,
-        tmdbId: shufflePick.season.tmdbId,
-        title: shufflePick.season.title,
-      };
-    } else {
-      if (!nextEp) return;
-      metaCopy.episode = nextEp;
-      metaCopy.season =
-        isLastEpisode && nextSeason
-          ? {
-              ...nextSeason,
-              tmdbId: nextSeason.id,
-            }
-          : metaCopy.season;
-    }
+    metaCopy.episode = nextEp;
+    metaCopy.season =
+      isLastEpisode && nextSeason
+        ? {
+            ...nextSeason,
+            tmdbId: nextSeason.id,
+          }
+        : metaCopy.season;
     setShouldStartFromBeginning(true);
     setDirectMeta(metaCopy);
     props.onChange?.(metaCopy);
@@ -208,7 +188,6 @@ export function NextEpisodeButton(props: {
     nextSeason,
     sourceId,
     setLastSuccessfulSource,
-    isShuffled,
   ]);
 
   const startCurrentEpisodeFromBeginning = useCallback(() => {
@@ -248,8 +227,7 @@ export function NextEpisodeButton(props: {
   ]);
 
   if (!props.inControl) return null;
-  if (!meta?.episode) return null;
-  if (!isShuffled && !nextEp) return null;
+  if (!meta?.episode || !nextEp) return null;
   if (metaType !== "show") return null;
 
   if (props.showAsButton) {
@@ -261,7 +239,7 @@ export function NextEpisodeButton(props: {
         className="w-full"
       >
         <Icon className="mr-2" icon={Icons.SKIP_EPISODE} />
-        {!isShuffled && isLastEpisode && nextEp
+        {isLastEpisode && nextEp
           ? t("player.nextEpisode.nextSeason")
           : t("player.nextEpisode.next")}
       </Button>
@@ -291,7 +269,7 @@ export function NextEpisodeButton(props: {
           className="bg-buttons-primary hover:bg-buttons-primaryHover text-buttons-primaryText flex justify-center items-center"
         >
           <Icon className="text-xl mr-1" icon={Icons.SKIP_EPISODE} />
-          {!isShuffled && isLastEpisode && nextEp
+          {isLastEpisode && nextEp
             ? t("player.nextEpisode.nextSeason")
             : t("player.nextEpisode.next")}
         </ActionButton>
