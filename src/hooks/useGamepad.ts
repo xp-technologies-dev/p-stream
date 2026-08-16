@@ -1,4 +1,16 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+export function useGamepadSeen(): boolean {
+  const [seen, setSeen] = useState(false);
+
+  useEffect(() => {
+    const onConnected = () => setSeen(true);
+    window.addEventListener("gamepadconnected", onConnected);
+    return () => window.removeEventListener("gamepadconnected", onConnected);
+  }, []);
+
+  return seen;
+}
 
 export interface GamepadMapping {
   // D-pad
@@ -78,8 +90,29 @@ interface GamepadCallbacks {
   enabled: boolean;
 }
 
+export function resolveGamepadMapping(
+  saved: Record<string, string>,
+  transport: boolean,
+): GamepadMapping {
+  const keys = Object.keys(DEFAULT_GAMEPAD_MAPPING) as (keyof GamepadMapping)[];
+  if (!transport) {
+    const general = { ...DEFAULT_GAMEPAD_MAPPING };
+    keys.forEach((k) => {
+      if (saved[k]) general[k] = saved[k];
+    });
+    return general;
+  }
+
+  const player = { ...DEFAULT_PLAYER_GAMEPAD_MAPPING };
+  keys.forEach((k) => {
+    if (saved[k] && saved[k] !== DEFAULT_GAMEPAD_MAPPING[k])
+      player[k] = saved[k];
+  });
+  return player;
+}
+
 export function useGamepadPolling({ onAction, enabled }: GamepadCallbacks) {
-  const prevButtonStates = useRef<Record<number, boolean>>({});
+  const prevButtonStates = useRef<Record<number, Record<number, boolean>>>({});
   const animFrameRef = useRef<number | null>(null);
   const onActionRef = useRef(onAction);
   const enabledRef = useRef(enabled);
@@ -126,8 +159,14 @@ export function useGamepadPolling({ onAction, enabled }: GamepadCallbacks) {
         return;
       }
 
+      const live: Record<number, true> = {};
+
       for (const gp of gamepads) {
         if (!gp) continue;
+        live[gp.index] = true;
+
+        const prev = prevButtonStates.current[gp.index] ?? {};
+        prevButtonStates.current[gp.index] = prev;
 
         for (const [btnIdx, mappingKey] of Object.entries(buttonToAction)) {
           const idx = Number(btnIdx);
@@ -135,7 +174,7 @@ export function useGamepadPolling({ onAction, enabled }: GamepadCallbacks) {
           if (!button) continue;
 
           const isPressed = button.pressed || button.value > 0.5;
-          const wasPressed = prevButtonStates.current[idx] ?? false;
+          const wasPressed = prev[idx] ?? false;
 
           // Only fire on button down (not held)
           if (isPressed && !wasPressed) {
@@ -145,11 +184,12 @@ export function useGamepadPolling({ onAction, enabled }: GamepadCallbacks) {
             }
           }
 
-          prevButtonStates.current[idx] = isPressed;
+          prev[idx] = isPressed;
         }
+      }
 
-        // Only process first connected gamepad
-        break;
+      for (const seen of Object.keys(prevButtonStates.current)) {
+        if (!live[Number(seen)]) delete prevButtonStates.current[Number(seen)];
       }
 
       animFrameRef.current = requestAnimationFrame(poll);

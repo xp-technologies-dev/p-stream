@@ -6,6 +6,7 @@ import { useCaptions } from "@/components/player/hooks/useCaptions";
 import { usePlayerMeta } from "@/components/player/hooks/usePlayerMeta";
 import { useVolume } from "@/components/player/hooks/useVolume";
 import { useOverlayRouter } from "@/hooks/useOverlayRouter";
+import { useNavigationEnabled } from "@/hooks/useSpatialNavigation";
 import { useOverlayStack } from "@/stores/interface/overlayStack";
 import { usePlayerStore } from "@/stores/player/store";
 import { usePreferencesStore } from "@/stores/preferences";
@@ -19,6 +20,8 @@ import {
   ShortcutId,
   matchesShortcut,
 } from "@/utils/browser/keyboardShortcuts";
+import { ownsKeyboardInput } from "@/utils/browser/keyboardTarget";
+import { isArrowKey } from "@/utils/navigation/playerMode";
 
 export function KeyboardEvents() {
   const router = useOverlayRouter("");
@@ -70,6 +73,8 @@ export function KeyboardEvents() {
   const enableNumberKeySeeking = usePreferencesStore(
     (s) => s.enableNumberKeySeeking,
   );
+  const widgetMode = usePlayerStore((s) => s.interface.widgetMode);
+  const navigationEnabled = useNavigationEnabled();
 
   const [isRolling, setIsRolling] = useState(false);
   const volumeDebounce = useRef<ReturnType<typeof setTimeout> | undefined>();
@@ -318,6 +323,8 @@ export function KeyboardEvents() {
     enableNativeSubtitles,
     setEnableNativeSubtitles,
     enableNumberKeySeeking,
+    widgetMode,
+    navigationEnabled,
   });
 
   useEffect(() => {
@@ -355,6 +362,8 @@ export function KeyboardEvents() {
       enableNativeSubtitles,
       setEnableNativeSubtitles,
       enableNumberKeySeeking,
+      widgetMode,
+      navigationEnabled,
     };
   }, [
     setShowVolume,
@@ -385,12 +394,17 @@ export function KeyboardEvents() {
     enableNativeSubtitles,
     setEnableNativeSubtitles,
     enableNumberKeySeeking,
+    widgetMode,
+    navigationEnabled,
   ]);
 
   useEffect(() => {
     const keydownEventHandler = (evt: KeyboardEvent) => {
-      if (evt.target && (evt.target as HTMLInputElement).nodeName === "INPUT")
-        return;
+      if (ownsKeyboardInput(evt.target)) return;
+
+      if (dataRef.current.widgetMode) return;
+
+      if (dataRef.current.navigationEnabled && isArrowKey(evt)) return;
 
       const k = evt.key;
       const keyL = evt.key.toLowerCase();

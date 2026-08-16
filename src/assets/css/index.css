@@ -17,7 +17,8 @@ body {
 
 @layer base {
   .theme-transition * {
-    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-property:
+      color, background-color, border-color, text-decoration-color, fill, stroke;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 300ms;
   }
@@ -267,9 +268,29 @@ input[type="range"].styled-slider.slider-progress::-ms-fill-lower {
   display: none !important;
 }
 
+html[data-input-modality="key"] a[href]:focus,
+html[data-input-modality="key"] area[href]:focus,
+html[data-input-modality="key"] button:focus,
+html[data-input-modality="key"] input:focus,
+html[data-input-modality="key"] select:focus,
+html[data-input-modality="key"] textarea:focus,
+html[data-input-modality="key"] summary:focus,
+html[data-input-modality="key"] [contenteditable]:focus,
+html[data-input-modality="key"] [tabindex="0"]:focus,
+html[data-input-modality="key"] .tabbable:focus {
+  outline: 2px solid theme("colors.type.link");
+  outline-offset: 2px;
+}
+
 .tabbable:focus-visible {
-  outline: 2px solid theme("colors.themePreview.primary");
-  box-shadow: 0 0 10px theme("colors.themePreview.secondary");
+  outline: 2px solid theme("colors.type.link");
+  outline-offset: 2px;
+}
+
+html[data-input-modality="key"] .focus-grow:focus,
+html[data-input-modality="key"] .focus-grow:focus-within {
+  transform: scale(1.1);
+  opacity: 1;
 }
 
 [dir="rtl"] .transform {

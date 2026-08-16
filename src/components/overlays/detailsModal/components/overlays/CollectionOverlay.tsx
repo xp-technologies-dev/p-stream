@@ -45,6 +45,8 @@ function SimpleCarousel({
       {/* Carousel Container */}
       <div
         ref={carouselRef}
+        data-nav-row
+        data-nav-remember
         className="grid grid-flow-col auto-cols-max gap-4 pt-0 overflow-x-scroll scrollbar-none rounded-xl overflow-y-hidden md:pl-8 md:pr-8"
         style={{
           scrollSnapType: "x mandatory",

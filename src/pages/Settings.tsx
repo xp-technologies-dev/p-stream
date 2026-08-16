@@ -433,6 +433,10 @@ export function SettingsPage() {
   );
   const gamepadMapping = usePreferencesStore((s) => s.gamepadMapping);
   const setGamepadMapping = usePreferencesStore((s) => s.setGamepadMapping);
+  const spatialNavigation = usePreferencesStore((s) => s.spatialNavigation);
+  const setSpatialNavigation = usePreferencesStore(
+    (s) => s.setSpatialNavigation,
+  );
 
   const enableThumbnails = usePreferencesStore((s) => s.enableThumbnails);
   const setEnableThumbnails = usePreferencesStore((s) => s.setEnableThumbnails);
@@ -823,6 +827,7 @@ export function SettingsPage() {
     watchingRowsToShow,
     enableGamepadControls,
     gamepadMapping,
+    spatialNavigation,
   });
 
   const availableSources = useMemo(() => {
@@ -942,6 +947,7 @@ export function SettingsPage() {
     setWatchingRowsToShow(state.watchingRowsToShow.state);
     setEnableGamepadControls(state.enableGamepadControls.state);
     setGamepadMapping(state.gamepadMapping.state);
+    setSpatialNavigation(state.spatialNavigation.state);
     setHomeSectionOrder(state.homeSectionOrder.state);
     setManualSourceSelection(state.manualSourceSelection.state);
     setPreferredMinimumResolution(state.preferredMinimumResolution.state);

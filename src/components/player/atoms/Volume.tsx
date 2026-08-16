@@ -39,6 +39,15 @@ export function Volume(props: Props) {
     toggleMute();
   }, [toggleMute]);
 
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key !== "Enter") return;
+      event.preventDefault();
+      toggleMute();
+    },
+    [toggleMute],
+  );
+
   const handleMouseEnter = useCallback(async () => {
     if (await canChangeVolume()) setHovering(true);
     document.body.classList.add("overflow-y-hidden");
@@ -83,7 +92,13 @@ export function Volume(props: Props) {
       onWheel={handleWheel}
     >
       <div className="pointer-events-auto flex cursor-pointer items-center py-0 touch-none">
-        <div className="px-4 text-2xl text-white" onClick={handleClick}>
+        <div
+          className="tabbable rounded px-4 text-2xl text-white"
+          onClick={handleClick}
+          onKeyDown={handleKeyDown}
+          role="button"
+          tabIndex={0}
+        >
           <Icon icon={getVolumeIcon(percentage / 100)} />
         </div>
         <div

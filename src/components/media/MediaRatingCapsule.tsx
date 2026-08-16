@@ -8,11 +8,7 @@ import {
 } from "react";
 
 import { Icon, Icons } from "@/components/Icon";
-import {
-  MediaRating,
-  RateMediaMeta,
-  useRatingsStore,
-} from "@/stores/ratings";
+import { MediaRating, RateMediaMeta, useRatingsStore } from "@/stores/ratings";
 
 interface MediaRatingCapsuleProps {
   media: RateMediaMeta;
@@ -57,6 +53,8 @@ export function MediaRatingCapsule({ media }: MediaRatingCapsuleProps) {
   const [expanded, setExpanded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const rowRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
   // Measured from the DOM (h-12 isn't a fixed 48px in this app).
   const [expandedWidth, setExpandedWidth] = useState<number | null>(null);
 
@@ -75,6 +73,16 @@ export function MediaRatingCapsule({ media }: MediaRatingCapsuleProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [expanded]);
 
+  useEffect(() => {
+    if (!containerRef.current?.contains(document.activeElement)) return;
+    if (!expanded) {
+      triggerRef.current?.focus();
+      return;
+    }
+    const index = OPTIONS.findIndex((o) => o.rating === rating);
+    optionRefs.current[index === -1 ? 0 : index]?.focus();
+  }, [expanded, rating]);
+
   const rate = useCallback(
     (value: MediaRating) => {
       if (!media.tmdbId) return;
@@ -90,8 +98,8 @@ export function MediaRatingCapsule({ media }: MediaRatingCapsuleProps) {
     <div
       ref={containerRef}
       className={classNames(
-        "relative flex h-12 items-center overflow-hidden rounded-full bg-buttons-secondary transition-[width,transform] duration-300 ease-out",
-        expanded ? "" : "w-12 hover:scale-110",
+        "relative flex h-12 items-center overflow-hidden focus-within:overflow-visible rounded-full bg-buttons-secondary transition-[width,transform] duration-300 ease-out",
+        expanded ? "" : "focus-grow w-12 hover:scale-110",
       )}
       style={expanded ? { width: expandedWidth ?? undefined } : undefined}
     >
@@ -107,6 +115,9 @@ export function MediaRatingCapsule({ media }: MediaRatingCapsuleProps) {
               />
             )}
             <button
+              ref={(el) => {
+                optionRefs.current[index] = el;
+              }}
               type="button"
               title={option.label}
               tabIndex={expanded ? 0 : -1}
@@ -116,7 +127,7 @@ export function MediaRatingCapsule({ media }: MediaRatingCapsuleProps) {
                 rate(option.rating);
               }}
               className={classNames(
-                "cursor-pointer rounded-full transition-opacity duration-200 ease-out",
+                "focus-grow cursor-pointer rounded-full transition-[opacity,transform] duration-200 ease-out hover:scale-110",
                 expanded
                   ? "opacity-100 delay-100"
                   : "pointer-events-none opacity-0",
@@ -124,7 +135,7 @@ export function MediaRatingCapsule({ media }: MediaRatingCapsuleProps) {
             >
               <div
                 className={classNames(
-                  "flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition-[color,transform] duration-150 hover:scale-110",
+                  "flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition-colors duration-150",
                   rating === option.rating
                     ? option.activeClass
                     : "text-white/70",
@@ -137,7 +148,9 @@ export function MediaRatingCapsule({ media }: MediaRatingCapsuleProps) {
         ))}
       </div>
       <button
+        ref={triggerRef}
         type="button"
+        tabIndex={expanded ? -1 : undefined}
         title={expanded ? undefined : (current?.label ?? "Rate")}
         onClick={(e) => {
           e.preventDefault();
@@ -145,7 +158,7 @@ export function MediaRatingCapsule({ media }: MediaRatingCapsuleProps) {
           setExpanded((v) => !v);
         }}
         className={classNames(
-          "absolute left-0 top-0 z-10 transition-opacity duration-150",
+          "absolute left-0 top-0 z-10 rounded-full transition-opacity duration-150",
           expanded ? "pointer-events-none opacity-0" : "opacity-100",
         )}
       >

@@ -32,6 +32,7 @@ export interface InterfaceSlice {
     timeFormat: VideoPlayerTimeFormat; // Time format of the video player
     isSpeedBoosted: boolean; // is playback speed temporarily boosted to 2x
     showSpeedIndicator: boolean; // should the speed indicator be shown
+    widgetMode: boolean; // are the arrows navigating controls instead of driving transport
   };
   updateInterfaceHovering(newState: PlayerHoverState): void;
   setSeeking(seeking: boolean): void;
@@ -44,6 +45,7 @@ export interface InterfaceSlice {
   setShouldStartFromBeginning(val: boolean): void;
   setSpeedBoosted(state: boolean): void;
   setShowSpeedIndicator(state: boolean): void;
+  setWidgetMode(state: boolean): void;
 }
 
 export const createInterfaceSlice: MakeSlice<InterfaceSlice> = (set, get) => ({
@@ -63,6 +65,7 @@ export const createInterfaceSlice: MakeSlice<InterfaceSlice> = (set, get) => ({
     shouldStartFromBeginning: false,
     isSpeedBoosted: false,
     showSpeedIndicator: false,
+    widgetMode: false,
   },
 
   setShouldStartFromBeginning(val) {
@@ -122,6 +125,11 @@ export const createInterfaceSlice: MakeSlice<InterfaceSlice> = (set, get) => ({
   setShowSpeedIndicator(state) {
     set((s) => {
       s.interface.showSpeedIndicator = state;
+    });
+  },
+  setWidgetMode(state) {
+    set((s) => {
+      s.interface.widgetMode = state;
     });
   },
 });

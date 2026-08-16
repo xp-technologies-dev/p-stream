@@ -47,8 +47,13 @@ export function CastCarousel({ mediaId, mediaType }: CastCarouselProps) {
   if (cast.length === 0 && !director) return null;
 
   return (
-    <div className="space-y-4 pt-8">
-      <div className="flex overflow-x-auto scrollbar-none pb-4 gap-4">
+    <div className="space-y-4 pt-6">
+      {/* pt-2: a sideways scroller clips vertically too, and the ring is outside the item. */}
+      <div
+        data-nav-row
+        data-nav-remember
+        className="flex overflow-x-auto scrollbar-none pt-2 pb-4 gap-4"
+      >
         {director && (
           <Link
             to={`/person/${director.id}`}

@@ -202,7 +202,10 @@ export function MoreContent({ onShowDetails }: MoreContentProps) {
         </div>
 
         {(contentType === "provider" || contentType === "genre") && (
-          <div className="flex items-center gap-3 mb-4 overflow-x-auto no-scrollbar py-4 -mx-4 px-4 sm:mx-0 sm:px-0 mask-linear-right">
+          <div
+            data-nav-row
+            className="flex items-center gap-3 mb-4 overflow-x-auto no-scrollbar py-4 -mx-4 px-4 sm:mx-0 sm:px-0 mask-linear-right"
+          >
             {(contentType === "provider" ? providers : genres).map((item: any) => {
               const isSelected = item.id.toString() === (selectedProvider?.id || selectedGenre?.id);
               return (

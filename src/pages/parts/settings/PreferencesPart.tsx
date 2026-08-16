@@ -135,6 +135,11 @@ export function PreferencesPart(props: {
     (s) => s.setEnableGamepadControls,
   );
 
+  const spatialNavigation = usePreferencesStore((s) => s.spatialNavigation);
+  const setSpatialNavigation = usePreferencesStore(
+    (s) => s.setSpatialNavigation,
+  );
+
   const enableAutoSubtitleSync = usePreferencesStore(
     (s) => s.enableAutoSubtitleSync,
   );
@@ -293,8 +298,24 @@ export function PreferencesPart(props: {
             />
             <ToggleRow
               title={t(
+                "settings.preferences.spatialNavigationLabel",
+                "Navigate with the arrow keys",
+              )}
+              description={t(
+                "settings.preferences.spatialNavigationDescription",
+                "Move focus between things on screen with the arrow keys instead of scrolling the page. Turns on by itself on a TV or when a controller is connected.",
+              )}
+              enabled={spatialNavigation === "on"}
+              onChange={(v) => setSpatialNavigation(v ? "on" : "off")}
+            />
+            <ToggleRow
+              title={t(
                 "settings.preferences.enableGamepadControls",
                 "Enable controller support",
+              )}
+              description={t(
+                "settings.preferences.enableGamepadControlsDescription",
+                "Not needed to use a controller — one is picked up as soon as you press a button. Turn this on to set your buttons up in advance.",
               )}
               enabled={enableGamepadControls}
               onChange={(v) => setEnableGamepadControls(v)}

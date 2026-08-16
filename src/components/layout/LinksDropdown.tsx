@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -210,6 +210,7 @@ function WatchPartyInputLink() {
 export function LinksDropdown(props: { children: React.ReactNode }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLDivElement>(null);
   const deviceName = useAuthStore((s) => s.account?.deviceName);
   const nickname = useAuthStore((s) => s.account?.nickname);
   const { logout } = useAuth();
@@ -245,15 +246,28 @@ export function LinksDropdown(props: { children: React.ReactNode }) {
   const isDesktopApp = useIsDesktopApp();
 
   return (
-    <div className="relative is-dropdown">
+    <div
+      className="relative is-dropdown"
+      onKeyDown={(evt) => {
+        if (evt.key !== "Escape" || !open) return;
+        evt.preventDefault();
+        setOpen(false);
+        triggerRef.current?.focus();
+      }}
+    >
       <div
+        ref={triggerRef}
         className={classNames(
           "cursor-pointer tabbable rounded-full flex gap-2 text-white items-center py-2 px-3 bg-pill-background hover:bg-pill-backgroundHover backdrop-blur-lg transition-all duration-100 hover:scale-105",
           open ? "bg-opacity-100" : "bg-opacity-50",
         )}
         tabIndex={0}
         onClick={toggleOpen}
-        onKeyUp={(evt) => evt.key === "Enter" && toggleOpen()}
+        onKeyDown={(evt) => {
+          if (evt.key !== "Enter" || evt.repeat) return;
+          evt.preventDefault();
+          toggleOpen();
+        }}
       >
         {props.children}
         <Icon
@@ -265,7 +279,10 @@ export function LinksDropdown(props: { children: React.ReactNode }) {
         />
       </div>
       <Transition animation="slide-down" show={open}>
-        <div className="rounded-xl absolute w-64 bg-dropdown-altBackground top-full mt-3 right-0">
+        <div
+          data-nav-scope
+          className="rounded-xl absolute w-64 bg-dropdown-altBackground top-full mt-3 right-0"
+        >
           {deviceName ? (
             <DropdownLink className="text-white" href="/settings">
               <UserAvatar />

@@ -26,7 +26,10 @@ export function Dropdown(props: DropdownProps) {
   const { direction = "down", customButton, customMenu } = props;
 
   return (
-    <div className={`relative my-4 w-fit max-w-[25rem] ${props.className}`}>
+    <div
+      data-nav-dropdown
+      className={`relative my-4 w-fit max-w-[25rem] ${props.className}`}
+    >
       <Listbox value={props.selectedItem} onChange={props.setSelectedItem}>
         {({ open }) => (
           <>
@@ -48,38 +51,40 @@ export function Dropdown(props: DropdownProps) {
                 </span>
               </Listbox.Button>
             )}
-            <Transition
-              animation="slide-down"
-              show={open}
-              className={`absolute z-[40] min-w-[20px] w-fit max-h-60 overflow-auto rounded-xl bg-dropdown-background py-1 text-white shadow-lg ring-1 ring-black ring-opacity-5 scrollbar-thin scrollbar-track-background-secondary scrollbar-thumb-type-secondary focus:outline-none ${
-                direction === "up" ? "bottom-full mb-4" : "top-full mt-1"
-              } ${props.side === "right" ? "right-0" : "left-0"}`}
-            >
-              {customMenu ? (
-                <Listbox.Options static as={Fragment}>
-                  {customMenu}
-                </Listbox.Options>
-              ) : (
-                <Listbox.Options static>
-                  {props.options.map((opt) => (
-                    <Listbox.Option
-                      className={({ active }) =>
-                        `cursor-pointer flex gap-4 items-center relative select-none py-2 px-4 mx-1 rounded-lg ${
-                          active
-                            ? "bg-background-secondaryHover text-type-link"
-                            : "text-type-secondary"
-                        } ${props.preventWrap ? "whitespace-nowrap" : ""}`
-                      }
-                      key={opt.id}
-                      value={opt}
-                    >
-                      {opt.leftIcon ? opt.leftIcon : null}
-                      {opt.name}
-                    </Listbox.Option>
-                  ))}
-                </Listbox.Options>
-              )}
-            </Transition>
+            <div data-nav-skip={open ? undefined : ""}>
+              <Transition
+                animation="slide-down"
+                show={open}
+                className={`absolute z-[40] min-w-[20px] w-fit max-h-60 overflow-auto rounded-xl bg-dropdown-background py-1 text-white shadow-lg ring-1 ring-black ring-opacity-5 scrollbar-thin scrollbar-track-background-secondary scrollbar-thumb-type-secondary focus:outline-none ${
+                  direction === "up" ? "bottom-full mb-4" : "top-full mt-1"
+                } ${props.side === "right" ? "right-0" : "left-0"}`}
+              >
+                {customMenu ? (
+                  <Listbox.Options static as={Fragment}>
+                    {customMenu}
+                  </Listbox.Options>
+                ) : (
+                  <Listbox.Options static>
+                    {props.options.map((opt) => (
+                      <Listbox.Option
+                        className={({ active }) =>
+                          `cursor-pointer flex gap-4 items-center relative select-none py-2 px-4 mx-1 rounded-lg ${
+                            active
+                              ? "bg-background-secondaryHover text-type-link"
+                              : "text-type-secondary"
+                          } ${props.preventWrap ? "whitespace-nowrap" : ""}`
+                        }
+                        key={opt.id}
+                        value={opt}
+                      >
+                        {opt.leftIcon ? opt.leftIcon : null}
+                        {opt.name}
+                      </Listbox.Option>
+                    ))}
+                  </Listbox.Options>
+                )}
+              </Transition>
+            </div>
           </>
         )}
       </Listbox>

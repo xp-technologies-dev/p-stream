@@ -26,6 +26,15 @@ export function ArrowLink(props: ArrowLinkProps) {
   const direction = props.direction || "right";
   const isExternal = !!(props as IArrowLinkPropsExternal).url;
   const isInternal = !!(props as IArrowLinkPropsInternal).to;
+  const onClick = props.onClick;
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLSpanElement>) => {
+    if (!onClick) return;
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault(); // Space would otherwise scroll the page
+    onClick();
+  };
+
   const content = (
     <span className="group mt-1 inline-flex cursor-pointer items-center space-x-1 pr-1 font-bold text-type-link hover:text-type-linkHover active:scale-95">
       {direction === "left" ? (
@@ -51,6 +60,14 @@ export function ArrowLink(props: ArrowLinkProps) {
       </LinkRouter>
     );
   return (
-    <span onClick={() => props.onClick && props.onClick()}>{content}</span>
+    <span
+      className="tabbable"
+      onClick={() => onClick && onClick()}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+    >
+      {content}
+    </span>
   );
 }

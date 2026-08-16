@@ -185,6 +185,7 @@ export function useAuthData() {
       if (settings.watchingRowsToShow !== undefined) partial.watchingRowsToShow = settings.watchingRowsToShow;
       if (settings.enableGamepadControls !== undefined) partial.enableGamepadControls = settings.enableGamepadControls;
       if (settings.gamepadMapping) partial.gamepadMapping = settings.gamepadMapping;
+      if (settings.spatialNavigation !== undefined) partial.spatialNavigation = settings.spatialNavigation;
 
       applyPreferencesSync(partial);
     },

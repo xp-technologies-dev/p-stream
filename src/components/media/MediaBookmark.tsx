@@ -10,9 +10,15 @@ import { IconPatch } from "../buttons/IconPatch";
 interface MediaBookmarkProps {
   media: MediaItem;
   group?: string[];
+  /** Off on a media card, where the button only appears on hover. */
+  focusable?: boolean;
 }
 
-export function MediaBookmarkButton({ media, group }: MediaBookmarkProps) {
+export function MediaBookmarkButton({
+  media,
+  group,
+  focusable = true,
+}: MediaBookmarkProps) {
   const addBookmark = useBookmarkStore((s) => s.addBookmark);
   const addBookmarkWithGroups = useBookmarkStore(
     (s) => s.addBookmarkWithGroups,
@@ -50,7 +56,11 @@ export function MediaBookmarkButton({ media, group }: MediaBookmarkProps) {
     media.year === undefined ? "hover:opacity-100" : "hover:opacity-95";
 
   return (
-    <div
+    <button
+      type="button"
+      tabIndex={focusable ? undefined : -1}
+      title={isBookmarked ? "Remove bookmark" : "Bookmark"}
+      className={`focus-grow cursor-pointer rounded-full opacity-75 transition-[opacity,transform] duration-300 ease-out hover:scale-110 ${buttonOpacityClass}`}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -59,8 +69,7 @@ export function MediaBookmarkButton({ media, group }: MediaBookmarkProps) {
     >
       <IconPatch
         icon={isBookmarked ? Icons.BOOKMARK : Icons.BOOKMARK_OUTLINE}
-        className={`${buttonOpacityClass} p-2 opacity-75 transition-opacity duration-300 hover:scale-110 hover:cursor-pointer`}
       />
-    </div>
+    </button>
   );
 }

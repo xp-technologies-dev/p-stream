@@ -10,6 +10,8 @@ import {
 export type PreferredMinimumResolution = "none" | "720" | "1080" | "4k";
 export type VolumeBoostApplyMode = "current" | "title";
 
+export type SpatialNavigationPreference = "on" | "off";
+
 export interface PreferencesStore {
   enableThumbnails: boolean;
   enableAutoplay: boolean;
@@ -49,6 +51,7 @@ export interface PreferencesStore {
   enableNumberKeySeeking: boolean;
   enablePauseOverlay: boolean;
   enableGamepadControls: boolean;
+  spatialNavigation: SpatialNavigationPreference;
   gamepadMapping: Record<string, string>;
   keyboardShortcuts: KeyboardShortcuts;
   videoBrightness: number;
@@ -97,6 +100,7 @@ export interface PreferencesStore {
   setEnableNumberKeySeeking(v: boolean): void;
   setEnablePauseOverlay(v: boolean): void;
   setEnableGamepadControls(v: boolean): void;
+  setSpatialNavigation(v: SpatialNavigationPreference): void;
   setGamepadMapping(v: Record<string, string>): void;
   setKeyboardShortcuts(v: KeyboardShortcuts): void;
   setVideoBrightness(v: number): void;
@@ -151,6 +155,7 @@ export const usePreferencesStore = create(
       enableNumberKeySeeking: true,
       enablePauseOverlay: false,
       enableGamepadControls: false,
+      spatialNavigation: "off",
       gamepadMapping: {},
       keyboardShortcuts: DEFAULT_KEYBOARD_SHORTCUTS,
       videoBrightness: 100,
@@ -353,6 +358,11 @@ export const usePreferencesStore = create(
       setEnableGamepadControls(v) {
         set((s) => {
           s.enableGamepadControls = v;
+        });
+      },
+      setSpatialNavigation(v) {
+        set((s) => {
+          s.spatialNavigation = v;
         });
       },
       setGamepadMapping(v) {

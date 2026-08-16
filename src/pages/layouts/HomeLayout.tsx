@@ -6,6 +6,8 @@ import { usePreferencesStore } from "@/stores/preferences";
 
 export function HomeLayout(props: {
   showBg: boolean;
+  /** Passed straight through to the nav's center slot. See NavigationProps. */
+  navCenter?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const enableFeatured = usePreferencesStore((state) => state.enableFeatured);
@@ -30,6 +32,7 @@ export function HomeLayout(props: {
         bg={enableFeatured ? true : props.showBg}
         clearBackground={clearBackground}
         noLightbar={enableFeatured}
+        centerSlot={props.navCenter}
       />
       {props.children}
     </FooterView>

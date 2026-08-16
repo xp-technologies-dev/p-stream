@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 
 import { useOverlayStack } from "@/stores/interface/overlayStack";
+import { ownsKeyboardInput } from "@/utils/browser/keyboardTarget";
 
 /**
  * Global keyboard event handler that works across the entire application.
@@ -21,11 +22,7 @@ export function useGlobalKeyboardEvents() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Don't handle keyboard events if user is typing in an input
-      if (
-        event.target &&
-        (event.target as HTMLInputElement).nodeName === "INPUT"
-      ) {
+      if (event.key !== "Escape" && ownsKeyboardInput(event.target)) {
         return;
       }
 

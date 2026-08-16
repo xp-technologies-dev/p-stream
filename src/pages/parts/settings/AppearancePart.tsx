@@ -77,10 +77,7 @@ function ToggleRow({
         ) : null}
         {notice ? (
           <div className="mt-1.5 flex items-start gap-2 text-xs text-type-secondary">
-            <Icon
-              icon={Icons.CIRCLE_EXCLAMATION}
-              className="mt-0.5 shrink-0"
-            />
+            <Icon icon={Icons.CIRCLE_EXCLAMATION} className="mt-0.5 shrink-0" />
             <span>{notice}</span>
           </div>
         ) : null}
@@ -223,13 +220,18 @@ function ThemePreview(props: {
 
   return (
     <div
+      data-nav-grid="1"
       className={classNames(props.selector, "cursor-pointer group tabbable")}
       onClick={props.onClick}
     >
       {/* Little card thing */}
       <div
         tabIndex={0}
-        onKeyUp={(e) => e.key === "Enter" && e.currentTarget.click()}
+        onKeyDown={(e) => {
+          if (e.key !== "Enter" || e.repeat) return;
+          e.preventDefault();
+          e.currentTarget.click();
+        }}
         className={classNames(
           "tabbable scroll-mt-32 w-full h-32 relative rounded-lg border bg-gradient-to-br from-themePreview-primary/20 to-themePreview-secondary/10 bg-clip-content transition-colors duration-150",
           props.active

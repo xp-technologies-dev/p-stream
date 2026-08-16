@@ -8,7 +8,7 @@ export function SidebarSection(props: {
   className?: string;
 }) {
   return (
-    <section className={props.className ?? ""}>
+    <section data-nav-remember className={props.className ?? ""}>
       <p className="text-sm font-bold uppercase text-settings-sidebar-type-secondary mb-2">
         {props.title}
       </p>

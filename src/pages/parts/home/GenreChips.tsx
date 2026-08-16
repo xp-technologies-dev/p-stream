@@ -42,6 +42,7 @@ export function GenreChips() {
   return (
     <div className="w-full mt-6">
       <div
+        data-nav-row={expanded ? undefined : ""}
         className={classNames(
           "flex gap-2 py-2 opacity-0 animate-fade-in",
           "transition-[max-height] duration-1000 ease-in-out overflow-hidden",

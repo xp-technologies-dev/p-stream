@@ -9,6 +9,15 @@ export function MwLink(props: {
 }) {
   const isExternal = !!props.url;
   const isInternal = !!props.to;
+  const onClick = props.onClick;
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLSpanElement>) => {
+    if (!onClick) return;
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault(); // Space would otherwise scroll the page
+    onClick();
+  };
+
   const content = (
     <span className="group mt-1 cursor-pointer font-bold text-type-link hover:text-type-linkHover active:scale-95">
       {props.children}
@@ -23,6 +32,14 @@ export function MwLink(props: {
     );
   if (isInternal) return <LinkRouter to={props.to ?? ""}>{content}</LinkRouter>;
   return (
-    <span onClick={() => props.onClick && props.onClick()}>{content}</span>
+    <span
+      className="tabbable"
+      onClick={() => onClick && onClick()}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+    >
+      {content}
+    </span>
   );
 }

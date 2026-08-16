@@ -110,6 +110,7 @@ export const SETTINGS_FIELDS = [
   { key: "watchingRowsToShow", backendKey: "watchingRowsToShow" },
   { key: "enableGamepadControls", backendKey: "enableGamepadControls" },
   { key: "gamepadMapping", backendKey: "gamepadMapping" },
+  { key: "spatialNavigation", backendKey: "spatialNavigation" },
 ] as const satisfies { key: string; backendKey: string }[];
 
 // Tracked here (for a UI control's dirty/reset behavior) but pushed to the
@@ -169,6 +170,7 @@ export interface UseSettingsStateInput {
   watchingRowsToShow: number;
   enableGamepadControls: boolean;
   gamepadMapping: Record<string, string>;
+  spatialNavigation: "on" | "off";
 }
 
 type SimpleFieldHandles = {
@@ -218,6 +220,7 @@ export function useSettingsState(input: UseSettingsStateInput) {
   field("watchingRowsToShow", useDerived(input.watchingRowsToShow), registry, resets);
   field("enableGamepadControls", useDerived(input.enableGamepadControls), registry, resets);
   field("gamepadMapping", useDerived(input.gamepadMapping), registry, resets);
+  field("spatialNavigation", useDerived(input.spatialNavigation), registry, resets);
   field("embedOrder", useDerived(input.embedOrder), registry, resets);
   field("enableEmbedOrder", useDerived(input.enableEmbedOrder), registry, resets);
 

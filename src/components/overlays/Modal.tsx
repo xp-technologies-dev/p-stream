@@ -124,7 +124,7 @@ export function FancyModal(props: {
                     <IconPatch icon={Icons.X} />
                   </button>
                 </div>
-                <div className="text-lg text-type-secondary">
+                <div data-nav-first className="text-lg text-type-secondary">
                   {props.children}
                 </div>
               </Flare.Child>

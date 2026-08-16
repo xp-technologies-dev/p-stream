@@ -15,12 +15,19 @@ export function Card(props: {
       className={classNames(
         {
           "bg-onboarding-card duration-300 border border-onboarding-border rounded-lg p-7": true,
-          "hover:bg-onboarding-cardHover transition-colors cursor-pointer":
+          "hover:bg-onboarding-cardHover transition-colors cursor-pointer tabbable":
             !!props.onClick,
         },
         props.className,
       )}
+      role={props.onClick ? "button" : undefined}
+      tabIndex={props.onClick ? 0 : undefined}
       onClick={props.onClick}
+      onKeyDown={(e) => {
+        if (!props.onClick || e.key !== "Enter" || e.repeat) return;
+        e.preventDefault();
+        props.onClick();
+      }}
     >
       {props.children}
     </div>

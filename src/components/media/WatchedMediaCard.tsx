@@ -63,13 +63,21 @@ export function WatchedMediaCard(props: WatchedMediaCardProps) {
     cursor: props.editable ? (isDragging ? "grabbing" : "grab") : "auto",
   };
 
+  const { tabIndex: _drag, role: _dragRole, ...dragAttributes } = attributes;
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
+      {...dragAttributes}
       {...listeners}
-      className={isDragging ? "pointer-events-none touch-none" : props.editable ? "touch-none" : ""}
+      className={
+        isDragging
+          ? "pointer-events-none touch-none"
+          : props.editable
+            ? "touch-none"
+            : ""
+      }
     >
       <MediaCard
         media={props.media}

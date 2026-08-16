@@ -3,6 +3,7 @@ import { ReactNode, RefObject, useEffect, useRef } from "react";
 import { OverlayDisplay } from "@/components/overlays/OverlayDisplay";
 import { AutoSkipSegments } from "@/components/player/internals/AutoSkipSegments";
 import { SkipTracker } from "@/components/player/internals/Backend/SkipTracker";
+import { usePlayerWidgetMode } from "@/components/player/hooks/usePlayerWidgetMode";
 import { GamepadEvents } from "@/components/player/internals/GamepadEvents";
 import { HeadUpdater } from "@/components/player/internals/HeadUpdater";
 import { KeyboardEvents } from "@/components/player/internals/KeyboardEvents";
@@ -65,6 +66,7 @@ function useHovering(containerEl: RefObject<HTMLDivElement>) {
 function BaseContainer(props: { children?: ReactNode }) {
   const containerEl = useRef<HTMLDivElement | null>(null);
   const display = usePlayerStore((s) => s.display);
+  const widgetMode = usePlayerWidgetMode(containerEl);
   useHovering(containerEl);
 
   // report container element to display interface
@@ -75,7 +77,11 @@ function BaseContainer(props: { children?: ReactNode }) {
   }, [display, containerEl]);
 
   return (
-    <div ref={containerEl}>
+    <div
+      ref={containerEl}
+      data-nav-skip={widgetMode ? undefined : ""}
+      data-nav-scope={widgetMode ? "" : undefined}
+    >
       <OverlayDisplay>
         <div className="h-screen select-none">{props.children}</div>
       </OverlayDisplay>

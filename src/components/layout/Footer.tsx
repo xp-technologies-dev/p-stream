@@ -74,7 +74,7 @@ export function Footer() {
           </h3>
           <p className="mt-3">{t("footer.legal.disclaimerText")}</p>
         </div>
-        <div className="flex flex-wrap gap-[0.5rem] -ml-3">
+        <div data-nav-row className="flex flex-wrap gap-[0.5rem] -ml-3">
           {conf().GITHUB_LINK && (
             <FooterLink icon={Icons.GITHUB} href={conf().GITHUB_LINK}>
               {t("footer.links.github")}

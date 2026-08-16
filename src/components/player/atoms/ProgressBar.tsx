@@ -10,9 +10,14 @@ import {
 
 import { useSkipTime } from "@/components/player/hooks/useSkipTime";
 import { useProgressBar } from "@/hooks/useProgressBar";
+import { useNavigationEnabled } from "@/hooks/useSpatialNavigation";
 import { nearestImageAt } from "@/stores/player/slices/thumbnails";
 import { usePlayerStore } from "@/stores/player/store";
-import { durationExceedsHour, formatSeconds } from "@/utils/format/formatSeconds";
+import {
+  durationExceedsHour,
+  formatSeconds,
+} from "@/utils/format/formatSeconds";
+import { stepForHold } from "@/utils/player/seekRamp";
 
 const SEGMENT_COLORS: Record<
   "intro" | "recap" | "credits" | "preview",
@@ -104,6 +109,71 @@ function useMouseHoverPosition(barRef: RefObject<HTMLDivElement>) {
   return { mousePos, mouseMove, mouseLeave };
 }
 
+function useKeyboardScrub(duration: number, time: number) {
+  const display = usePlayerStore((s) => s.display);
+  const setDraggingTime = usePlayerStore((s) => s.setDraggingTime);
+  const setSeeking = usePlayerStore((s) => s.setSeeking);
+  const [scrubTime, setScrubTime] = useState<number | null>(null);
+  const scrubRef = useRef<number | null>(null);
+  const holdRef = useRef<{ key: string; since: number } | null>(null);
+  const commitRef = useRef<{ target: number; at: number } | null>(null);
+
+  const commit = useCallback(() => {
+    holdRef.current = null;
+    const target = scrubRef.current;
+    if (target === null) return;
+    scrubRef.current = null;
+    setScrubTime(null);
+    setSeeking(false);
+    commitRef.current = { target, at: Date.now() };
+    display?.setTime(target);
+  }, [display, setSeeking]);
+
+  const onKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLElement>) => {
+      const back = event.key === "ArrowLeft";
+      if (!back && event.key !== "ArrowRight") return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+        return;
+      }
+      if (duration <= 0) return;
+
+      event.preventDefault();
+
+      const now = Date.now();
+      if (holdRef.current?.key !== event.key) {
+        holdRef.current = { key: event.key, since: now };
+      }
+      const step = stepForHold(now - holdRef.current.since, duration);
+
+      const recent = commitRef.current;
+      const from =
+        scrubRef.current ??
+        (recent !== null && now - recent.at < 1000 ? recent.target : time);
+      const target = Math.min(
+        Math.max(from + (back ? -step : step), 0),
+        duration,
+      );
+
+      scrubRef.current = target;
+      setScrubTime(target);
+      setSeeking(true);
+      setDraggingTime(target);
+    },
+    [duration, time, setSeeking, setDraggingTime],
+  );
+
+  const onKeyUp = useCallback(
+    (event: React.KeyboardEvent<HTMLElement>) => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      commit();
+    },
+    [commit],
+  );
+
+  return { scrubTime, onKeyDown, onKeyUp, onLeave: commit };
+}
+
 export function ProgressBar() {
   const { duration, time, buffered } = usePlayerStore((s) => s.progress);
   const display = usePlayerStore((s) => s.display);
@@ -111,6 +181,8 @@ export function ProgressBar() {
   const setSeeking = usePlayerStore((s) => s.setSeeking);
   const { isSeeking } = usePlayerStore((s) => s.interface);
   const segments = useSkipTime();
+  const navigable = useNavigationEnabled();
+  const [focused, setFocused] = useState(false);
 
   const segmentRanges = useMemo(() => {
     if (duration <= 0) return [];
@@ -140,6 +212,14 @@ export function ProgressBar() {
 
   const ref = useRef<HTMLDivElement>(null);
   const { mouseMove, mouseLeave, mousePos } = useMouseHoverPosition(ref);
+  const { scrubTime, onKeyDown, onKeyUp, onLeave } = useKeyboardScrub(
+    duration,
+    time,
+  );
+
+  const scrubPercentage =
+    scrubTime !== null && duration > 0 ? (scrubTime / duration) * 100 : -1;
+  const previewPercentage = scrubPercentage >= 0 ? scrubPercentage : mousePos;
 
   const { dragging, dragPercentage, dragMouseDown } = useProgressBar(
     ref,
@@ -159,28 +239,49 @@ export function ProgressBar() {
         <div
           className="absolute bottom-0"
           style={{
-            left: `${mousePos}%`,
+            left: `${previewPercentage}%`,
           }}
         >
           <ThumbnailDisplay
-            at={Math.floor((mousePos / 100) * duration)}
-            show={mousePos > -1}
+            at={Math.floor((previewPercentage / 100) * duration)}
+            show={previewPercentage > -1}
           />
         </div>
       </div>
 
       <div className="w-full" ref={ref}>
         <div
-          className="group w-full h-8 flex items-center cursor-pointer"
+          className={[
+            "group w-full h-8 flex items-center cursor-pointer",
+            navigable ? "tabbable rounded" : "",
+          ].join(" ")}
           onMouseDown={dragMouseDown}
           onTouchStart={dragMouseDown}
           onMouseLeave={mouseLeave}
           onMouseMove={mouseMove}
+          onKeyDown={onKeyDown}
+          onKeyUp={onKeyUp}
+          onFocus={() => setFocused(true)}
+          onBlur={() => {
+            setFocused(false);
+            onLeave();
+          }}
+          tabIndex={navigable ? 0 : undefined}
+          role={navigable ? "slider" : undefined}
+          aria-label={navigable ? "Seek" : undefined}
+          aria-orientation="horizontal"
+          aria-valuemin={0}
+          aria-valuemax={Math.round(duration)}
+          aria-valuenow={Math.round(scrubTime ?? time)}
+          aria-valuetext={formatSeconds(
+            Math.max(scrubTime ?? time, 0),
+            durationExceedsHour(duration),
+          )}
         >
           <div
             className={[
               "relative w-full h-1 bg-progress-background bg-opacity-25 rounded-full transition-[height] duration-100 group-hover:h-1.5",
-              dragging ? "!h-1.5" : "",
+              dragging || focused ? "!h-1.5" : "",
             ].join(" ")}
           >
             {/* Skip segment markers */}
@@ -212,7 +313,9 @@ export function ProgressBar() {
                     0,
                     Math.min(
                       1,
-                      dragging ? dragPercentage / 100 : time / duration,
+                      dragging
+                        ? dragPercentage / 100
+                        : (scrubTime ?? time) / duration,
                     ),
                   ) * 100
                 }%`,
@@ -221,7 +324,7 @@ export function ProgressBar() {
               <div
                 className={[
                   "w-[1rem] min-w-[1rem] h-[1rem] rounded-full transform translate-x-1/2 scale-0 group-hover:scale-100 bg-white transition-[transform] duration-100",
-                  isSeeking ? "scale-100" : "",
+                  isSeeking || focused ? "scale-100" : "",
                 ].join(" ")}
               />
             </div>

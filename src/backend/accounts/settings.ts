@@ -68,6 +68,7 @@ export interface SettingsInput {
   watchingRowsToShow?: number;
   enableGamepadControls?: boolean;
   gamepadMapping?: Record<string, string>;
+  spatialNavigation?: "on" | "off";
 }
 
 export interface SettingsResponse {
@@ -114,6 +115,7 @@ export interface SettingsResponse {
   watchingRowsToShow?: number;
   enableGamepadControls?: boolean;
   gamepadMapping?: Record<string, string>;
+  spatialNavigation?: "on" | "off";
 }
 
 export function updateSettings(
@@ -196,5 +198,6 @@ export function buildFullSettingsInput(
     watchingRowsToShow: preferences.watchingRowsToShow,
     enableGamepadControls: preferences.enableGamepadControls,
     gamepadMapping: preferences.gamepadMapping,
+    spatialNavigation: preferences.spatialNavigation,
   };
 }

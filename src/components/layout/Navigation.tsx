@@ -1,6 +1,5 @@
 import classNames from "classnames";
-import { useEffect, useState } from "react";
-import { useMeasure } from "react-use";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { Link, To, useNavigate } from "react-router-dom";
 
 import { NoUserAvatar, UserAvatar } from "@/components/Avatar";
@@ -16,7 +15,6 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { BlurEllipsis } from "@/pages/layouts/SubPageLayout";
 import { conf } from "@/setup/config";
 import { useBannerSize } from "@/stores/banner";
-import { useNavLayoutStore } from "@/stores/navLayout";
 import { usePreferencesStore } from "@/stores/preferences";
 
 import { HomeSectionCustomizer } from "@/pages/parts/home/HomeSectionCustomizer";
@@ -99,6 +97,7 @@ function MobileActionsMenu(props: {
   unreadCount: number | string;
 }) {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     function onWindowClick(evt: MouseEvent) {
@@ -115,8 +114,18 @@ function MobileActionsMenu(props: {
       : props.unreadCount === "99+";
 
   return (
-    <div className="relative is-mobile-menu lg:hidden">
-      <a
+    <div
+      className="relative is-mobile-menu lg:hidden"
+      onKeyDown={(evt) => {
+        if (evt.key !== "Escape" || !open) return;
+        evt.preventDefault();
+        setOpen(false);
+        triggerRef.current?.focus();
+      }}
+    >
+      <button
+        ref={triggerRef}
+        type="button"
         onClick={() => setOpen((v) => !v)}
         className="text-xl text-white tabbable rounded-full backdrop-blur-lg relative block"
         title="Menu"
@@ -127,9 +136,12 @@ function MobileActionsMenu(props: {
             {props.unreadCount}
           </span>
         ) : null}
-      </a>
+      </button>
       <Transition animation="slide-down" show={open}>
-        <div className="absolute left-0 top-full mt-3 z-50 w-56 rounded-xl bg-dropdown-altBackground py-2 shadow-lg ring-1 ring-white/10">
+        <div
+          data-nav-scope
+          className="absolute left-0 top-full mt-3 z-50 w-56 rounded-xl bg-dropdown-altBackground py-2 shadow-lg ring-1 ring-white/10"
+        >
           <MobileMenuLink href={conf().DISCORD_LINK}>
             <Icon icon={Icons.DISCORD} className="text-xl" />
             Discord
@@ -182,6 +194,7 @@ export interface NavigationProps {
   noLightbar?: boolean;
   doBackground?: boolean;
   clearBackground?: boolean;
+  centerSlot?: ReactNode;
 }
 
 export function Navigation(props: NavigationProps) {
@@ -192,18 +205,6 @@ export function Navigation(props: NavigationProps) {
   const { openNotifications, getUnreadCount } = useNotifications();
   const { openTipJar } = useTipJar();
   const { openDownloadModal } = useDownloadModal();
-  const [leftRef, { width: leftWidth }] = useMeasure<HTMLDivElement>();
-  const [rightRef, { width: rightWidth }] = useMeasure<HTMLDivElement>();
-  const setLeftWidth = useNavLayoutStore((s) => s.setLeftWidth);
-  const setRightWidth = useNavLayoutStore((s) => s.setRightWidth);
-
-  useEffect(() => {
-    setLeftWidth(leftWidth);
-  }, [leftWidth, setLeftWidth]);
-
-  useEffect(() => {
-    setRightWidth(rightWidth);
-  }, [rightWidth, setRightWidth]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -307,12 +308,18 @@ export function Navigation(props: NavigationProps) {
           top: `${bannerHeight}px`,
         }}
       >
-        <div className={classNames("fixed left-0 right-0 flex items-center")}>
-          <div className="px-7 py-5 relative z-[60] flex flex-1 items-center justify-between">
-            <div
-              ref={leftRef}
-              className="flex items-center space-x-1.5 ssm:space-x-3 pointer-events-auto"
-            >
+        <div
+          data-nav-obstruct
+          className={classNames("fixed left-0 right-0 flex items-center")}
+        >
+          <div
+            data-nav-row
+            className={classNames(
+              "px-7 relative z-[60] flex flex-1 flex-wrap items-center gap-x-3 gap-y-2",
+              props.centerSlot ? "py-5 lg:h-20 lg:py-0" : "py-5",
+            )}
+          >
+            <div className="flex shrink-0 items-center space-x-1.5 ssm:space-x-3 pointer-events-auto">
               <Link
                 className="block tabbable rounded-full text-xs ssm:text-base"
                 to="/"
@@ -335,9 +342,9 @@ export function Navigation(props: NavigationProps) {
                   />
                 </a>
 
-                <a
+                <button
+                  type="button"
                   onClick={() => openDownloadModal()}
-                  rel="noreferrer"
                   className="text-xl text-white tabbable rounded-full backdrop-blur-lg"
                   title="Download"
                 >
@@ -347,12 +354,13 @@ export function Navigation(props: NavigationProps) {
                     downsized
                     navigation
                   />
-                </a>
+                </button>
 
-                <a
+                <button
+                  type="button"
                   onClick={() => openNotifications()}
-                  rel="noreferrer"
                   className="text-xl text-white tabbable rounded-full backdrop-blur-lg relative"
+                  title="Notifications"
                 >
                   <IconPatch
                     icon={Icons.BELL}
@@ -370,10 +378,10 @@ export function Navigation(props: NavigationProps) {
                       </span>
                     ) : null;
                   })()}
-                </a>
-                <a
+                </button>
+                <button
+                  type="button"
                   onClick={() => openTipJar()}
-                  rel="noreferrer"
                   className="text-xl text-white tabbable rounded-full backdrop-blur-lg"
                   title="Tip Jar"
                 >
@@ -383,7 +391,7 @@ export function Navigation(props: NavigationProps) {
                     downsized
                     navigation
                   />
-                </a>
+                </button>
               </div>
               <MobileActionsMenu
                 openDownloadModal={openDownloadModal}
@@ -392,10 +400,12 @@ export function Navigation(props: NavigationProps) {
                 unreadCount={getUnreadCount()}
               />
             </div>
-            <div
-              ref={rightRef}
-              className="relative pointer-events-auto flex items-center gap-3"
-            >
+            {props.centerSlot ? (
+              <div className="pointer-events-auto order-last w-full min-w-0 lg:order-none lg:w-auto lg:flex-1">
+                {props.centerSlot}
+              </div>
+            ) : null}
+            <div className="relative pointer-events-auto ml-auto flex shrink-0 items-center gap-3">
               <div className="hidden lg:block">
                 <HomeLayoutCustomizerToggle />
               </div>

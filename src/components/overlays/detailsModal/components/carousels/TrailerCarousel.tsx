@@ -65,7 +65,11 @@ export function TrailerCarousel({
       <h3 className="text-lg font-semibold text-white/90">
         {t("details.trailers")}
       </h3>
-      <div className="flex overflow-x-auto scrollbar-none pb-4 gap-4">
+      <div
+        data-nav-row
+        data-nav-remember
+        className="flex overflow-x-auto scrollbar-none pt-2 pb-4 gap-4"
+      >
         {allTrailers.map((video) => {
           const isImdbTrailer = video.id === "imdb-trailer";
           let thumbnailUrl: string;

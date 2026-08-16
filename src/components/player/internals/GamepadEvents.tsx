@@ -2,9 +2,8 @@ import { useCallback } from "react";
 
 import { useCaptions } from "@/components/player/hooks/useCaptions";
 import { useVolume } from "@/components/player/hooks/useVolume";
-import { useGamepadPolling } from "@/hooks/useGamepad";
+import { useGamepadPlayerActions } from "@/hooks/useGamepadNavigation";
 import { usePlayerStore } from "@/stores/player/store";
-import { usePreferencesStore } from "@/stores/preferences";
 
 export function GamepadEvents() {
   const display = usePlayerStore((s) => s.display);
@@ -13,9 +12,7 @@ export function GamepadEvents() {
   const duration = usePlayerStore((s) => s.progress.duration);
   const { setVolume, toggleMute } = useVolume();
   const { toggleLastUsed } = useCaptions();
-  const enableGamepadControls = usePreferencesStore(
-    (s) => s.enableGamepadControls,
-  );
+  const widgetMode = usePlayerStore((s) => s.interface.widgetMode);
 
   const handleAction = useCallback(
     (action: string) => {
@@ -52,9 +49,6 @@ export function GamepadEvents() {
         case "toggle-captions":
           toggleLastUsed();
           break;
-        case "back":
-          window.history.back();
-          break;
         default:
           break;
       }
@@ -70,10 +64,7 @@ export function GamepadEvents() {
     ],
   );
 
-  useGamepadPolling({
-    onAction: handleAction,
-    enabled: enableGamepadControls,
-  });
+  useGamepadPlayerActions(handleAction, !widgetMode);
 
   return null;
 }

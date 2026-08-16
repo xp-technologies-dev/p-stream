@@ -27,7 +27,10 @@ export function ScrollToTopButton() {
   };
 
   return (
-    <div className="fixed bottom-9 md:bottom-4 transform -translate-x-1/2 z-50 left-12 md:left-1/2">
+    <div
+      data-nav-obstruct
+      className="fixed bottom-9 md:bottom-4 transform -translate-x-1/2 z-50 left-12 md:left-1/2"
+    >
       <div
         className={`absolute inset-0 mx-auto h-[50px] w-[200px] rounded-full blur-[50px] opacity-50 pointer-events-none z-0 ${
           isVisible ? "opacity-100 visible" : "opacity-0 invisible"

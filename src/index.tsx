@@ -36,6 +36,8 @@ import { SimklBookmarkSyncer } from "@/stores/simkl/SimklBookmarkSyncer";
 import { SimklHistorySyncer } from "@/stores/simkl/SimklHistorySyncer";
 import { TraktScrobbler } from "@/stores/trakt/TraktScrobbler";
 import { WatchHistorySyncer } from "@/stores/watchHistory/WatchHistorySyncer";
+import { initInputModality } from "@/utils/browser/inputModality";
+import { initNavDebug } from "@/utils/browser/navDebug";
 import { detectRegion, useRegionStore } from "@/utils/locale/detectRegion";
 
 import {
@@ -64,6 +66,8 @@ try {
 
 // initialize
 initializeImageFadeIn();
+initInputModality();
+initNavDebug();
 
 function LoadingScreen(props: { type: "user" | "lazy" }) {
   const mapping = {

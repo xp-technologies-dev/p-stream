@@ -475,6 +475,8 @@ export function EpisodeCarousel({
 
         <div
           ref={carouselRef}
+          data-nav-row
+          data-nav-remember
           className="flex overflow-x-auto space-x-4 pb-4 pt-2 lg:px-12 scrollbar-hide carousel-container"
           style={{
             scrollbarWidth: "none",

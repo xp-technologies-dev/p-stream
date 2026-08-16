@@ -8,6 +8,8 @@ import {
   useInternalOverlayRouter,
   useRouterAnchorUpdate,
 } from "@/hooks/useOverlayRouter";
+import { pushScope } from "@/utils/browser/focusScopes";
+import { resolveEntryPoint } from "@/utils/navigation/entryPoint";
 
 export interface OverlayProps {
   id: string;
@@ -41,20 +43,46 @@ export function OverlayPortal(props: {
   const [portalElement, setPortalElement] = useState<Element | null>(null);
   const [isReady, setIsReady] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const [wrapper, setWrapperState] = useState<HTMLDivElement | null>(null);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const spacerRef = useRef<HTMLDivElement>(null);
   const close = props.close;
   const zIndex = props.zIndex ?? 999;
+
+  const setWrapper = useCallback((el: HTMLDivElement | null) => {
+    wrapperRef.current = el;
+    setWrapperState(el);
+  }, []);
+
+  const initialFocus = useCallback(() => {
+    const el = wrapperRef.current;
+    if (el === null) return spacerRef.current ?? false;
+    return resolveEntryPoint(el) ?? spacerRef.current ?? false;
+  }, []);
+
+  useEffect(() => {
+    if (!wrapper) return;
+    if (!props.show) {
+      wrapper.setAttribute("data-nav-skip", "");
+      return;
+    }
+    wrapper.removeAttribute("data-nav-skip");
+    return pushScope(wrapper);
+  }, [props.show, wrapper]);
 
   useEffect(() => {
     const element = ref.current?.closest(".popout-location");
     setPortalElement(element ?? document.body);
-
-    // Ensure DOM is ready before enabling focus trap
-    const timer = setTimeout(() => {
-      setIsReady(true);
-    }, 100); // Increased delay to ensure DOM is fully rendered
-
-    return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (!props.show) {
+      setIsReady(false);
+      return;
+    }
+    const timer = setTimeout(() => setIsReady(true), 100);
+    return () => clearTimeout(timer);
+  }, [props.show]);
 
   // Add global error handler for unhandled promise rejections
   useEffect(() => {
@@ -97,6 +125,7 @@ export function OverlayPortal(props: {
                 focusTrapOptions={{
                   allowOutsideClick: true,
                   clickOutsideDeactivates: true,
+                  initialFocus,
                   fallbackFocus: () => document.body,
                   returnFocusOnDeactivate: true,
                   escapeDeactivates: false, // Let our keyboard handler manage escape
@@ -106,6 +135,7 @@ export function OverlayPortal(props: {
                 }}
               >
                 <div
+                  ref={setWrapper}
                   className="popout-wrapper fixed overflow-hidden pointer-events-auto inset-0 select-none"
                   style={{ zIndex }}
                 >
@@ -126,7 +156,8 @@ export function OverlayPortal(props: {
                   >
                     {/* a tabable index that does nothing - used so focus trap doesn't error when nothing is rendered yet */}
                     <div
-                      tabIndex={1}
+                      ref={spacerRef}
+                      tabIndex={0}
                       className="focus:ring-0 focus:outline-none opacity-0"
                     />
                     {props.children}

@@ -191,7 +191,13 @@ function MediaCardContent({
           canLink ? "hover:bg-mediaCard-hoverBackground tabbable" : ""
         } ${closable ? "jiggle" : ""}`}
         tabIndex={canLink ? 0 : -1}
-        onKeyUp={(e) => e.key === "Enter" && e.currentTarget.click()}
+        onKeyDown={(e) => {
+          // Buttons inside the card keep their own Enter.
+          if (e.target !== e.currentTarget) return;
+          if (e.key !== "Enter" || e.repeat) return;
+          e.preventDefault();
+          e.currentTarget.click();
+        }}
       >
         <Flare.Light
           flareSize={300}
@@ -269,16 +275,16 @@ function MediaCardContent({
 
             {!closable && (
               <div
-                className="absolute bookmark-button"
+                className="absolute bookmark-button p-2"
                 onClick={(e) => e.preventDefault()}
               >
-                <MediaBookmarkButton media={media} />
+                <MediaBookmarkButton media={media} focusable={false} />
               </div>
             )}
 
             {searchQuery.length > 0 && !closable ? (
-              <div className="absolute" onClick={(e) => e.preventDefault()}>
-                <MediaBookmarkButton media={media} />
+              <div className="absolute p-2" onClick={(e) => e.preventDefault()}>
+                <MediaBookmarkButton media={media} focusable={false} />
               </div>
             ) : null}
 
@@ -290,7 +296,7 @@ function MediaCardContent({
               <IconPatch
                 clickable
                 className="text-2xl text-mediaCard-badgeText transition-transform hover:scale-110 duration-500"
-                onClick={() => closable && onClose?.()}
+                onClick={closable ? () => onClose?.() : undefined}
                 icon={Icons.X}
               />
             </div>
@@ -588,6 +594,7 @@ export function MediaCard(props: MediaCardProps) {
   if (!canLink) {
     return (
       <span
+        data-nav-grid="1"
         className="relative block"
         onClick={(e) => {
           if (e.defaultPrevented) {
@@ -605,6 +612,7 @@ export function MediaCard(props: MediaCardProps) {
   return (
     <Link
       to={link}
+      data-nav-grid="1"
       tabIndex={-1}
       className={classNames(
         "tabbable relative block",

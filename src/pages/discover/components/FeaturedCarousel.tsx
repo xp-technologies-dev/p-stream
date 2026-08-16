@@ -57,7 +57,6 @@ export interface FeaturedMedia extends Partial<Movie & TVShow> {
 
 interface FeaturedCarouselProps {
   onShowDetails: (media: FeaturedMedia) => void;
-  children?: ReactNode;
   searching?: boolean;
   shorter?: boolean;
   forcedCategory?: "foryou" | "movies" | "tvshows" | "editorpicks";
@@ -128,7 +127,6 @@ function FeaturedCarouselSkeleton({ shorter }: { shorter?: boolean }) {
 
 export function FeaturedCarousel({
   onShowDetails,
-  children,
   searching,
   shorter,
   forcedCategory,
@@ -165,7 +163,7 @@ export function FeaturedCarousel({
   );
   const userLanguage = useLanguageStore((s) => s.language);
   const formattedLanguage = getTmdbLanguageCode(userLanguage);
-  const { width: windowWidth, height: windowHeight } = useWindowSize();
+  const { height: windowHeight } = useWindowSize();
   const [releaseInfo, setReleaseInfo] = useState<TraktReleaseResponse | null>(
     null,
   );
@@ -773,9 +771,10 @@ export function FeaturedCarousel({
 
   const mediaTitle = currentMedia.title || currentMedia.name;
 
-  let searchClasses = "";
-  if (searching) searchClasses = "opacity-0 transition-opacity duration-300";
-  else searchClasses = "opacity-100 transition-opacity duration-300";
+  const searchClasses = classNames(
+    "transition-[opacity,visibility] duration-300",
+    searching ? "opacity-0 invisible" : "opacity-100 visible",
+  );
 
   const getQualityIndicator = () => {
     if (!releaseInfo || currentMedia.type === "show") return null;
@@ -878,50 +877,6 @@ export function FeaturedCarousel({
       >
         <Icon icon={Icons.CHEVRON_RIGHT} className="text-white w-8 h-8" />
       </button>
-
-      {/* Navigation Dots */}
-      <div
-        className={classNames(
-          "absolute bottom-8 left-1/2 -translate-x-1/2 z-[19] flex gap-2",
-          searchClasses,
-        )}
-      >
-        {media.map((item, index) => (
-          <button
-            key={`dot-${item.id}`}
-            type="button"
-            onClick={() => {
-              setContentOpacity(0);
-              setImdbRatings({});
-              setReleaseInfo(null);
-
-              // Wait for fade out, then change index and fade in
-              setTimeout(() => {
-                setCurrentIndex(index);
-                // Clear logo after index change so new logo can load
-                setLogoUrl(undefined);
-                setTimeout(() => setContentOpacity(1), 100);
-              }, 150);
-
-              // Reset autoplay timer when clicking dots
-              if (autoPlayInterval.current) {
-                clearInterval(autoPlayInterval.current);
-              }
-              if (isAutoPlaying) {
-                autoPlayInterval.current = setInterval(() => {
-                  setCurrentIndex((prev) => (prev + 1) % media.length);
-                }, 5000);
-              }
-            }}
-            className={`w-2.5 h-2.5 rounded-full transition-all ${
-              index === currentIndex
-                ? "bg-white scale-125"
-                : "bg-white/50 hover:bg-white/75"
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
-      </div>
 
       {/* Content Overlay */}
       <div
@@ -1046,16 +1001,48 @@ export function FeaturedCarousel({
           </div>
         </div>
       </div>
-      {children && (
-        <div
-          className={classNames(
-            "absolute inset-0 pointer-events-none",
-            windowWidth > 1280 ? "pt-0" : "pt-2",
-          )}
-        >
-          <div className="pointer-events-auto z-50">{children}</div>
-        </div>
-      )}
+      <div
+        className={classNames(
+          "absolute bottom-8 left-1/2 -translate-x-1/2 z-[19] flex gap-2",
+          searchClasses,
+        )}
+      >
+        {media.map((item, index) => (
+          <button
+            key={`dot-${item.id}`}
+            type="button"
+            onClick={() => {
+              setContentOpacity(0);
+              setImdbRatings({});
+              setReleaseInfo(null);
+
+              // Wait for fade out, then change index and fade in
+              setTimeout(() => {
+                setCurrentIndex(index);
+                // Clear logo after index change so new logo can load
+                setLogoUrl(undefined);
+                setTimeout(() => setContentOpacity(1), 100);
+              }, 150);
+
+              // Reset autoplay timer when clicking dots
+              if (autoPlayInterval.current) {
+                clearInterval(autoPlayInterval.current);
+              }
+              if (isAutoPlaying) {
+                autoPlayInterval.current = setInterval(() => {
+                  setCurrentIndex((prev) => (prev + 1) % media.length);
+                }, 5000);
+              }
+            }}
+            className={`w-2.5 h-2.5 rounded-full transition-all ${
+              index === currentIndex
+                ? "bg-white scale-125"
+                : "bg-white/50 hover:bg-white/75"
+            }`}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
+      </div>
     </div>
   );
 }

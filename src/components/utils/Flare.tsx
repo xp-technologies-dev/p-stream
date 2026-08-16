@@ -21,13 +21,13 @@ function Base(props: {
   className?: string;
   children?: ReactNode;
   tabIndex?: number;
-  onKeyUp?: (e: React.KeyboardEvent<HTMLDivElement>) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLDivElement>) => void;
 }) {
   return (
     <div
       tabIndex={props.tabIndex}
       className={c(props.className, "relative")}
-      onKeyUp={props.onKeyUp}
+      onKeyDown={props.onKeyDown}
     >
       {props.children}
     </div>
